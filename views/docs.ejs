@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dramabox API - Documentation</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #171412;
+            --paper: #FBF4E7;
+            --paper-2: #F3E9D6;
+            --line: #171412;
+            --c-blue: #A6D4FF;
+            --c-blue-d: #4C8EDB;
+            --c-red: #FFB4A6;
+            --c-red-d: #E0664F;
+            --c-gold: #FFD873;
+            --c-gold-d: #C79A1E;
+            --c-mint: #B7EFC5;
+            --c-mint-d: #2F9E5B;
+            --c-purple: #D6C2F2;
+            --c-purple-d: #7A4FC2;
+            --c-pink: #FFC7DE;
+            --c-pink-d: #DB5C93;
+            --c-green: #B7F0D0;
+            --c-green-d: #1E9E63;
+            --c-teal: #AEEAE6;
+            --c-teal-d: #23948E;
+            --c-peach: #FFDCB8;
+            --c-peach-d: #D48A2E;
+        }
+
+        * {
+            font-family: 'Space Grotesk', sans-serif;
+            box-sizing: border-box;
+        }
+
+        code, pre, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--paper);
+            color: var(--ink);
+            background-image:
+                radial-gradient(circle, rgba(23,20,18,0.13) 1.4px, transparent 1.4px);
+            background-size: 22px 22px;
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ---------- Floating decorative blobs ---------- */
+        .blob {
+            position: fixed;
+            border-radius: 9999px;
+            filter: blur(2px);
+            opacity: 0.55;
+            z-index: 0;
+            pointer-events: none;
+            border: 3px solid var(--line);
+            animation: floaty 9s ease-in-out infinite;
+        }
+        .blob-1 { width: 90px; height: 90px; top: 8%; left: 4%; background: var(--c-gold); animation-delay: 0s; }
+        .blob-2 { width: 60px; height: 60px; top: 22%; right: 6%; background: var(--c-pink); animation-delay: 1.2s; }
+        .blob-3 { width: 45px; height: 45px; bottom: 12%; left: 8%; background: var(--c-mint); animation-delay: 2.4s; }
+        .blob-4 { width: 70px; height: 70px; bottom: 20%; right: 8%; background: var(--c-blue); animation-delay: 0.6s; }
+        @media (max-width: 768px) { .blob { display: none; } }
+
+        @keyframes floaty {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-22px) rotate(12deg); }
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(18px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes fadeSlideUp {
+            0% { opacity: 0; transform: translateY(14px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes underlineDraw {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+            60% { opacity: 1; transform: translateY(-6px) scale(1.02); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulseSoft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        @keyframes sparkleSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .anim-pop {
+            opacity: 0;
+            animation: popIn 0.55s cubic-bezier(.22,1,.36,1) forwards;
+        }
+
+        .hero-underline {
+            display: inline-block;
+            position: relative;
+        }
+        .hero-underline::after {
+            content: "";
+            position: absolute;
+            left: 0; bottom: 2px;
+            height: 10px;
+            width: 100%;
+            background: var(--c-gold);
+            z-index: -1;
+            border-radius: 3px;
+            animation: underlineDraw 0.8s ease-out 0.3s both;
+        }
+
+        /* ---------- Neobrutalist primitives ---------- */
+        .nb-box {
+            background: #fff;
+            border: 3px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 5px 5px 0px var(--line);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .nb-box:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--line);
+        }
+
+        .nb-flat {
+            background: #fff;
+            border: 3px solid var(--line);
+            border-radius: 16px;
+        }
+
+        .nb-icon {
+            width: 46px; height: 46px;
+            border: 3px solid var(--line);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 3px 3px 0px var(--line);
+            transition: transform 0.25s ease;
+        }
+        .endpoint-card:hover .nb-icon {
+            animation: wiggle 0.5s ease;
+        }
+
+        .method-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border: 2px solid var(--line);
+            box-shadow: 2px 2px 0px var(--line);
+        }
+
+        /* Chunky press-effect buttons */
+        .btn-nb {
+            color: var(--ink);
+            padding: 11px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            border: 3px solid var(--line);
+            box-shadow: 4px 4px 0px var(--line);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .btn-nb:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--line);
+        }
+        .btn-nb:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px var(--line);
+        }
+
+        .btn-primary { background: var(--c-blue); }
+        .btn-success { background: var(--c-mint); }
+        .btn-warning { background: var(--c-gold); }
+        .btn-danger { background: var(--c-red); }
+
+        /* Inputs */
+        .input-wrapper { position: relative; }
+        .input-icon {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink);
+            opacity: 0.5;
+            font-size: 13px;
+        }
+        .input-modern {
+            background: var(--paper-2);
+            border: 3px solid var(--line);
+            border-radius: 12px;
+            padding: 11px 14px 11px 40px;
+            color: var(--ink);
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            outline: none;
+            box-shadow: 3px 3px 0px var(--line);
+        }
+        .input-modern:focus {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0px var(--line);
+            background: #fff;
+        }
+        .input-modern::placeholder {
+            color: rgba(23, 20, 18, 0.45);
+        }
+
+        /* Endpoint accent bar */
+        .accent-bar { height: 8px; width: 100%; background: var(--accent, var(--c-blue)); border-bottom: 3px solid var(--line); border-radius: 15px 15px 0 0; }
+
+        /* Result panel (light) */
+        .result-pre {
+            background: #12100E;
+            color: #F3E9D6;
+            border: 3px solid var(--line);
+            border-top: none;
+        }
+        .json-key { color: #7FC4FF; }
+        .json-string { color: #FFD873; }
+        .json-number { color: #8AF0B0; }
+        .json-boolean { color: #FF9FCB; }
+        .json-null { color: #C7AEFA; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--paper-2); }
+        ::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 4px; border: 2px solid var(--paper-2); }
+
+        .glass-header {
+            background: var(--paper);
+            border-bottom: 3px solid var(--line);
+        }
+
+        .stat-card {
+            border: 3px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 4px 4px 0px var(--line);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .stat-card:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0px var(--line); }
+
+        .badge-live {
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--c-mint-d);
+            border: 2px solid var(--line);
+            animation: pulseSoft 1.4s ease-in-out infinite;
+        }
+
+        .dot-loader { display: inline-flex; gap: 4px; align-items: center; }
+        .dot-loader span {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--c-blue-d);
+            animation: dotBounce 1s infinite ease-in-out;
+        }
+        .dot-loader span:nth-child(2) { animation-delay: 0.15s; }
+        .dot-loader span:nth-child(3) { animation-delay: 0.3s; }
+
+        .toast-nb {
+            border: 3px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 5px 5px 0px var(--line);
+            animation: bounceIn 0.4s cubic-bezier(.22,1,.36,1) both;
+        }
+
+        .lang-menu-anim { animation: popIn 0.18s ease both; }
+
+        .rotate-90 { transform: rotate(90deg); }
+
+        .sparkle {
+            animation: sparkleSpin 3s linear infinite;
+        }
+
+        h1, h2, h3 { letter-spacing: -0.01em; }
+    </style>
+</head>
+
+<body class="min-h-screen antialiased relative overflow-x-hidden">
+
+    <!-- Decorative floating blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+
+    <!-- Header -->
+    <nav class="glass-header sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-3">
+                <div class="nb-icon" style="background: var(--c-gold); cursor: default;">
+                    <i class="fa-solid fa-play text-[15px]"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold leading-none">Dramabox API</h1>
+                    <p class="text-[11px] font-semibold text-black/50 mt-0.5">REST API Documentation</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Language Selector -->
+                <div class="relative">
+                    <button onclick="toggleLangMenu()"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-full nb-flat hover:-translate-y-0.5 transition cursor-pointer outline-none"
+                        style="box-shadow: 2px 2px 0px var(--line);">
+                        <i class="fa-solid fa-language text-[13px]" style="color: var(--c-blue-d);"></i>
+                        <span id="currentLangLabel" class="text-xs font-bold">Indonesia (ID)</span>
+                        <i id="langChevron" class="fa-solid fa-chevron-down text-[9px] ml-1 transition-transform duration-200"></i>
+                    </button>
+                    <div id="langMenu"
+                        class="hidden lang-menu-anim absolute top-full right-0 mt-2 w-40 nb-flat rounded-xl overflow-hidden z-50"
+                        style="box-shadow: 4px 4px 0px var(--line);">
+                        <button onclick="updateLanguage('in')"
+                            class="w-full text-left px-4 py-3 text-xs font-semibold hover:bg-[var(--paper-2)] flex items-center justify-between group transition-colors border-b-2 border-black/10">
+                            <span>Indonesia (ID)</span>
+                            <i class="fa-solid fa-check opacity-0 transition-opacity" style="color: var(--c-mint-d);" id="check-in"></i>
+                        </button>
+                        <button onclick="updateLanguage('en')"
+                            class="w-full text-left px-4 py-3 text-xs font-semibold hover:bg-[var(--paper-2)] flex items-center justify-between group transition-colors">
+                            <span>English (EN)</span>
+                            <i class="fa-solid fa-check opacity-0 transition-opacity" style="color: var(--c-mint-d);" id="check-en"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="baseUrlBox"
+                    class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full nb-flat" style="background: var(--c-mint); box-shadow: 2px 2px 0px var(--line);">
+                    <span class="badge-live"></span>
+                    <code id="baseUrlDisplay" class="text-xs font-bold mono"></code>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="max-w-6xl mx-auto px-6 py-14 relative z-10">
+        <div class="text-center mb-12 anim-pop" style="animation-delay: 0.05s;">
+            <h2 class="text-4xl font-extrabold mb-4">
+                API <span class="hero-underline">Documentation</span>
+            </h2>
+            <p class="text-black/60 max-w-xl mx-auto font-medium">
+                Akses konten Dramabox dengan mudah. Klik salah satu endpoint di bawah untuk lihat detail dan langsung coba live request-nya.
+            </p>
+            <div class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full nb-flat text-xs font-bold" style="background: var(--c-pink); box-shadow: 3px 3px 0px var(--line);">
+                <i class="fa-solid fa-code sparkle"></i>
+                Dibuat oleh Yun &middot; t.me/q_sra
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+            <div class="stat-card bg-white p-5 text-center anim-pop" style="animation-delay: 0.1s;">
+                <div class="text-2xl font-extrabold" style="color: var(--c-blue-d);">10</div>
+                <div class="text-[11px] font-semibold text-black/50 mt-1">Endpoints</div>
+            </div>
+            <div class="stat-card bg-white p-5 text-center anim-pop" style="animation-delay: 0.18s;">
+                <div class="text-2xl font-extrabold" style="color: var(--c-mint-d);">REST</div>
+                <div class="text-[11px] font-semibold text-black/50 mt-1">API Type</div>
+            </div>
+            <div class="stat-card bg-white p-5 text-center anim-pop" style="animation-delay: 0.26s;">
+                <div class="text-2xl font-extrabold" style="color: var(--c-purple-d);">JSON</div>
+                <div class="text-[11px] font-semibold text-black/50 mt-1">Response</div>
+            </div>
+            <div class="stat-card bg-white p-5 text-center anim-pop" style="animation-delay: 0.34s;">
+                <div class="text-2xl font-extrabold" style="color: var(--c-gold-d);">v1.2</div>
+                <div class="text-[11px] font-semibold text-black/50 mt-1">Version</div>
+            </div>
+        </div>
+
+        <!-- Endpoints Grid -->
+        <div class="space-y-5">
+
+            <!-- Search -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-blue); animation-delay: 0.05s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('search')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-blue);">
+                            <i class="fa-solid fa-magnifying-glass text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-blue);">GET</span>
+                                <h3 class="font-bold">Cari Drama</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/search</code>
+                        </div>
+                    </div>
+                    <i id="arrow-search" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-search" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mencari drama berdasarkan kata kunci.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-search"></i>
+                            <input type="text" id="input-search-keyword" value="ceo" placeholder="Masukkan keyword..." class="input-modern">
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-file"></i>
+                            <input type="number" id="input-search-page" value="1" placeholder="Halaman" class="input-modern">
+                        </div>
+                    </div>
+                    <button id="btn-search"
+                        onclick="testEndpoint('search', '/api/search', { keyword: document.getElementById('input-search-keyword').value, page: document.getElementById('input-search-page').value })"
+                        class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-search" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-search" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Download All -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-red); animation-delay: 0.1s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('download-all')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-red);">
+                            <i class="fa-solid fa-download text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-red);">GET</span>
+                                <h3 class="font-bold">Download All Chapters</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/download/:bookId</code>
+                        </div>
+                    </div>
+                    <i id="arrow-download-all" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-download-all" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan seluruh episode drama dalam format JSON.</p>
+                    <div class="input-wrapper mb-4">
+                        <i class="input-icon fa-solid fa-book"></i>
+                        <input type="text" id="input-download-all-bookId" value="41000122558" placeholder="Masukkan Book ID..." class="input-modern">
+                    </div>
+                    <button id="btn-download-all"
+                        onclick="testEndpoint('download-all', '/download/:bookId', { bookId: document.getElementById('input-download-all-bookId').value })"
+                        class="btn-nb btn-danger">
+                        <i class="fa-solid fa-download"></i> Download All
+                    </button>
+                    <div id="result-header-download-all" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-download-all" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- VIP -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-gold); animation-delay: 0.15s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('vip')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-gold);">
+                            <i class="fa-solid fa-crown text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-gold);">GET</span>
+                                <h3 class="font-bold">VIP Channel</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/vip</code>
+                        </div>
+                    </div>
+                    <i id="arrow-vip" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-vip" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan daftar drama dari channel VIP/Theater.</p>
+                    <button id="btn-vip" onclick="testEndpoint('vip', '/api/vip', {})" class="btn-nb btn-warning">
+                        <i class="fa-solid fa-crown"></i> Get VIP Data
+                    </button>
+                    <div id="result-header-vip" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-vip" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Home -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-teal); animation-delay: 0.2s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('home')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-teal);">
+                            <i class="fa-solid fa-house text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-teal);">GET</span>
+                                <h3 class="font-bold">Drama Terbaru</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/home</code>
+                        </div>
+                    </div>
+                    <i id="arrow-home" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-home" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan daftar drama terbaru di homepage.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-file"></i>
+                            <input type="number" id="input-home-page" value="1" placeholder="Halaman" class="input-modern">
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-list"></i>
+                            <input type="number" id="input-home-size" value="10" placeholder="Jumlah per halaman" class="input-modern">
+                        </div>
+                    </div>
+                    <button id="btn-home"
+                        onclick="testEndpoint('home', '/api/home', { page: document.getElementById('input-home-page').value, size: document.getElementById('input-home-size').value })"
+                        class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-home" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-home" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Detail -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-purple); animation-delay: 0.25s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('detail')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-purple);">
+                            <i class="fa-solid fa-circle-info text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-purple);">GET</span>
+                                <h3 class="font-bold">Detail Drama</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/detail/:bookId/v2</code>
+                        </div>
+                    </div>
+                    <i id="arrow-detail" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-detail" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan detail lengkap sebuah drama.</p>
+                    <div class="input-wrapper mb-4">
+                        <i class="input-icon fa-solid fa-book"></i>
+                        <input type="text" id="input-detail-bookId" value="41000122558" placeholder="Masukkan Book ID..." class="input-modern">
+                    </div>
+                    <button id="btn-detail"
+                        onclick="testEndpoint('detail', '/api/detail/:bookId/v2', { bookId: document.getElementById('input-detail-bookId').value })"
+                        class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-detail" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-detail" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Chapters -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-blue); animation-delay: 0.3s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('chapters')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-blue);">
+                            <i class="fa-solid fa-list-ol text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-blue);">GET</span>
+                                <h3 class="font-bold">Daftar Chapter</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/chapters/:bookId</code>
+                        </div>
+                    </div>
+                    <i id="arrow-chapters" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-chapters" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan daftar semua chapter/episode sebuah drama.</p>
+                    <div class="input-wrapper mb-4">
+                        <i class="input-icon fa-solid fa-book"></i>
+                        <input type="text" id="input-chapters-bookId" value="41000122558" placeholder="Masukkan Book ID..." class="input-modern">
+                    </div>
+                    <button id="btn-chapters"
+                        onclick="testEndpoint('chapters', '/api/chapters/:bookId', { bookId: document.getElementById('input-chapters-bookId').value })"
+                        class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-chapters" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-chapters" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Stream -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-green); animation-delay: 0.35s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('stream')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-green);">
+                            <i class="fa-solid fa-circle-play text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-green);">GET</span>
+                                <h3 class="font-bold">Stream URL</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/stream</code>
+                        </div>
+                    </div>
+                    <i id="arrow-stream" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-stream" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan link streaming (m3u8/mp4) untuk episode tertentu.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-book"></i>
+                            <input type="text" id="input-stream-bookId" value="41000122558" placeholder="Masukkan Book ID..." class="input-modern">
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-tv"></i>
+                            <input type="number" id="input-stream-episode" value="1" placeholder="Episode" class="input-modern">
+                        </div>
+                    </div>
+                    <button id="btn-stream"
+                        onclick="testEndpoint('stream', '/api/stream', { bookId: document.getElementById('input-stream-bookId').value, episode: document.getElementById('input-stream-episode').value })"
+                        class="btn-nb btn-success">
+                        <i class="fa-solid fa-play"></i> Get Stream URL
+                    </button>
+                    <div id="result-header-stream" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-stream" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-teal); animation-delay: 0.4s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('categories')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-teal);">
+                            <i class="fa-solid fa-tags text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-teal);">GET</span>
+                                <h3 class="font-bold">Daftar Kategori</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/categories</code>
+                        </div>
+                    </div>
+                    <i id="arrow-categories" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-categories" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan daftar semua kategori drama.</p>
+                    <button id="btn-categories" onclick="testEndpoint('categories', '/api/categories', {})" class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-categories" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-categories" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Category by ID -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-peach); animation-delay: 0.45s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('category')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-peach);">
+                            <i class="fa-solid fa-folder text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-peach);">GET</span>
+                                <h3 class="font-bold">Drama per Kategori</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/category/:id</code>
+                        </div>
+                    </div>
+                    <i id="arrow-category" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-category" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan drama berdasarkan kategori tertentu.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-hashtag"></i>
+                            <input type="number" id="input-category-id" value="449" placeholder="Category ID" class="input-modern">
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-file"></i>
+                            <input type="number" id="input-category-page" value="1" placeholder="Halaman" class="input-modern">
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="input-icon fa-solid fa-list"></i>
+                            <input type="number" id="input-category-size" value="10" placeholder="Per halaman" class="input-modern">
+                        </div>
+                    </div>
+                    <button id="btn-category"
+                        onclick="testEndpoint('category', '/api/category/:id', { id: document.getElementById('input-category-id').value, page: document.getElementById('input-category-page').value, size: document.getElementById('input-category-size').value })"
+                        class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-category" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-category" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+            <!-- Recommend -->
+            <div class="nb-box endpoint-card overflow-hidden anim-pop" style="--accent: var(--c-pink); animation-delay: 0.5s;">
+                <div class="accent-bar"></div>
+                <div class="p-5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('recommend')">
+                    <div class="flex items-center gap-4">
+                        <div class="nb-icon" style="background: var(--c-pink);">
+                            <i class="fa-solid fa-star text-[15px]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="method-badge" style="background: var(--c-pink);">GET</span>
+                                <h3 class="font-bold">Rekomendasi</h3>
+                            </div>
+                            <code class="text-xs text-black/45 mt-1 mono">/api/recommend</code>
+                        </div>
+                    </div>
+                    <i id="arrow-recommend" class="fa-solid fa-chevron-right text-black/40 transition-transform duration-200"></i>
+                </div>
+                <div id="content-recommend" class="hidden border-t-[3px] border-[var(--line)] p-5" style="background: var(--paper-2);">
+                    <p class="text-sm text-black/60 mb-4 font-medium">Mendapatkan daftar drama rekomendasi.</p>
+                    <button id="btn-recommend" onclick="testEndpoint('recommend', '/api/recommend', {})" class="btn-nb btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Request
+                    </button>
+                    <div id="result-header-recommend" class="mt-4 hidden p-4 rounded-t-xl nb-flat text-sm" style="border-bottom: none;"></div>
+                    <pre id="result-content-recommend" class="result-pre hidden p-4 rounded-b-xl text-xs max-h-[300px] overflow-auto mono"></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-10 mt-16 relative z-10" style="border-top: 3px solid var(--line); background: var(--paper-2);">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <div class="nb-flat inline-block px-6 py-4 mb-4" style="box-shadow: 4px 4px 0px var(--line); background: #fff;">
+                <p class="font-extrabold text-sm mb-1">Dramabox API v1.2.0</p>
+                <p class="text-black/50 text-xs font-semibold">Developed by <span style="color: var(--c-blue-d);">Yun</span> &middot; <span class="mono">t.me/q_sra</span></p>
+            </div>
+            <br>
+            <a href="https://whatsapp.com/channel/0029VbD9rcnB4hdIw6JKcp1P" target="_blank"
+                class="btn-nb inline-flex" style="background: var(--c-mint);">
+                <i class="fa-brands fa-whatsapp"></i> Hubungi Kami
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        const baseUrl = window.location.origin;
+        let currentLang = '<%= defaultLang %>';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePage();
+            updateLangUI(currentLang);
+
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('langMenu');
+                const btn = document.getElementById('currentLangLabel').parentElement;
+                if (!menu.classList.contains('hidden') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    toggleLangMenu();
+                }
+            });
+        });
+
+        function toggleLangMenu() {
+            const menu = document.getElementById('langMenu');
+            const chevron = document.getElementById('langChevron');
+            menu.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        function updateLangUI(lang) {
+            const label = document.getElementById('currentLangLabel');
+            label.textContent = lang === 'in' ? 'Indonesia (ID)' : 'English (EN)';
+            document.getElementById('check-in').style.opacity = lang === 'in' ? '1' : '0';
+            document.getElementById('check-en').style.opacity = lang === 'en' ? '1' : '0';
+        }
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            updateLangUI(lang);
+            toggleLangMenu();
+            showToast(`Bahasa diubah ke ${lang === 'in' ? 'Indonesia' : 'English'}`);
+        }
+
+        function initializePage() {
+            const baseUrlDisplay = document.getElementById('baseUrlDisplay');
+            if (baseUrlDisplay) baseUrlDisplay.textContent = baseUrl;
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
+            const wasHidden = content.classList.contains('hidden');
+            content.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-90');
+            if (wasHidden) {
+                content.style.animation = 'none';
+                void content.offsetWidth;
+                content.style.animation = 'fadeSlideUp 0.3s ease both';
+            }
+        }
+
+        let lastResponseData = {};
+
+        function formatJson(json) {
+            if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+            return json;
+        }
+
+        function displayResult(id, data, error, timeMs) {
+            const header = document.getElementById('result-header-' + id);
+            const content = document.getElementById('result-content-' + id);
+            header.classList.remove('hidden');
+            content.classList.remove('hidden');
+            content.style.animation = 'none';
+            void content.offsetWidth;
+            content.style.animation = 'fadeSlideUp 0.3s ease both';
+
+            if (error) {
+                header.innerHTML = `<div class="flex justify-between items-center">
+            <span class="font-bold" style="color: var(--c-red-d);"><i class="fa-solid fa-circle-xmark mr-2"></i>Error</span>
+            <span class="text-black/40 text-xs font-semibold">${timeMs.toFixed(0)}ms</span>
+        </div>`;
+                content.textContent = formatJson({ error });
+                lastResponseData[id] = null;
+            } else {
+                lastResponseData[id] = data;
+                header.innerHTML = `<div class="flex justify-between items-center flex-wrap gap-2">
+            <span class="font-bold" style="color: var(--c-mint-d);"><i class="fa-solid fa-circle-check mr-2"></i>Success</span>
+            <div class="flex items-center gap-2">
+                <span class="text-black/40 text-xs font-semibold">${timeMs.toFixed(0)}ms</span>
+                <button onclick="copyResponse('${id}')"
+                    class="px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition nb-flat hover:-translate-y-0.5"
+                    style="box-shadow: 2px 2px 0px var(--line);" title="Copy">
+                    <i class="fa-solid fa-copy"></i> Copy
+                </button>
+                <button onclick="downloadResponse('${id}')"
+                    class="px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition nb-flat hover:-translate-y-0.5"
+                    style="box-shadow: 2px 2px 0px var(--line); background: var(--c-blue);" title="Download">
+                    <i class="fa-solid fa-download"></i> TXT
+                </button>
+            </div>
+        </div>`;
+                content.textContent = formatJson(data);
+            }
+        }
+
+        function copyResponse(id) {
+            const data = lastResponseData[id];
+            if (!data) return;
+            const text = JSON.stringify(data, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Berhasil disalin ke clipboard!');
+            }).catch(() => {
+                showToast('Gagal menyalin', true);
+            });
+        }
+
+        function downloadResponse(id) {
+            const data = lastResponseData[id];
+            if (!data) return;
+            const text = JSON.stringify(data, null, 2);
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `response_${id}_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('File berhasil diunduh!');
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `toast-nb fixed bottom-4 right-4 px-4 py-3 text-sm font-bold z-50`;
+            toast.style.background = isError ? 'var(--c-red)' : 'var(--c-mint)';
+            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-xmark' : 'fa-circle-check'} mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px) scale(0.9)';
+                setTimeout(() => toast.remove(), 300);
+            }, 2200);
+        }
+
+        async function testEndpoint(id, path, params = {}) {
+            const btn = document.getElementById(`btn-${id}`);
+            const header = document.getElementById('result-header-' + id);
+            const content = document.getElementById('result-content-' + id);
+
+            if (btn) btn.disabled = true;
+            header.classList.remove('hidden');
+            content.classList.add('hidden');
+            header.innerHTML = `<span class="flex items-center gap-2 font-bold" style="color: var(--c-blue-d);">
+                <span class="dot-loader"><span></span><span></span><span></span></span> Loading...
+            </span>`;
+
+            const start = performance.now();
+            let url = baseUrl + path;
+            const query = [];
+
+            for (const [key, val] of Object.entries(params)) {
+                if (url.includes(`:${key}`)) {
+                    url = url.replace(`:${key}`, val);
+                } else if (val !== '') {
+                    query.push(`${key}=${encodeURIComponent(val)}`);
+                }
+            }
+            query.push(`lang=${currentLang}`);
+            url += (url.includes('?') ? '&' : '?') + query.join('&');
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                displayResult(id, data, null, performance.now() - start);
+            } catch (e) {
+                displayResult(id, null, e.message, performance.now() - start);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+
+</html>
