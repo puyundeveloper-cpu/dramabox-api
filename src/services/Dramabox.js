@@ -508,15 +508,13 @@ export default class Dramabox {
     return result;
   }
 
-  async getChapters(bookId) {
-    const cacheKey = `chapters_${bookId}_${this.lang}`;
-    const cached = cache.get(cacheKey);
-    if (cached) return cached;
-
-    const data = await this.request("/drama-box/chapterv2/batch/load", {
+  // Ambil SATU batch chapter (dipakai internal oleh getChapters untuk loop
+  // sampai semua episode kebawa, dan oleh batchDownload).
+  async _fetchChapterBatch(index, bookId) {
+    return this.request("/drama-box/chapterv2/batch/load", {
       boundaryIndex: 0,
       comingPlaySectionId: -1,
-      index: 1,
+      index,
       currencyPlaySource: "discover_new_rec_new",
       needEndRecommend: 0,
       currencyPlaySourceName: "",
@@ -526,13 +524,86 @@ export default class Dramabox {
       loadDirection: 0,
       bookId,
     });
+  }
 
-    const chapters = data?.data?.chapterList || [];
-    chapters.forEach((ch) => {
-      const cdn = ch.cdnList?.find((c) => c.isDefault === 1);
-      ch.videoPath =
-        cdn?.videoPathList?.find((v) => v.isDefault === 1)?.videoPath || "N/A";
-    });
+  // Mengembalikan SEMUA episode (bukan cuma batch pertama). Dramabox
+  // membalas chapterv2/batch/load per-5-episode, jadi di sini kita loop
+  // index 1, 6, 11, ... sampai totalChapters, mirip logika batchDownload,
+  // supaya video yang dikembalikan benar-benar lengkap satu season.
+  async getChapters(bookId) {
+    const cacheKey = `chapters_${bookId}_${this.lang}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+
+    const collected = [];
+    let totalChapters = 0;
+    let payChapterNum = 0;
+
+    const first = await this._fetchChapterBatch(1, bookId);
+    totalChapters = first?.data?.chapterCount || 0;
+    payChapterNum = first?.data?.payChapterNum || 0;
+    if (first?.data?.chapterList) collected.push(...first.data.chapterList);
+
+    let idx = 6;
+    let retryCount = 0;
+    while (idx <= totalChapters) {
+      let batch;
+      try {
+        batch = await this._fetchChapterBatch(idx, bookId);
+      } catch (e) {
+        batch = null;
+      }
+      const items = batch?.data?.chapterList || [];
+
+      if (items.length > 0) {
+        collected.push(...items);
+        idx += 5;
+        retryCount = 0;
+      } else {
+        retryCount++;
+        if (retryCount >= 3) {
+          // lewati batch ini biar tidak infinite loop kalau memang
+          // episode itu terkunci/gagal terus, sisanya tetap lanjut diambil
+          idx += 5;
+          retryCount = 0;
+        } else {
+          await delay(1500);
+        }
+      }
+      await delay(400);
+    }
+
+    // Kalau ada episode berbayar (payChapterNum) yang belum kebawa di batch manapun
+    if (payChapterNum > 0 && !collected.some((c) => c.chapterIndex === payChapterNum)) {
+      try {
+        const payBatch = await this._fetchChapterBatch(payChapterNum, bookId);
+        if (payBatch?.data?.chapterList) collected.push(...payBatch.data.chapterList);
+      } catch (e) {
+        // biarkan, tidak fatal
+      }
+    }
+
+    // Dedupe + urutkan + lengkapi videoPath (kualitas terbaik) tanpa
+    // membuang cdnList mentahnya, supaya klien tetap bisa pilih kualitas lain.
+    const uniqueMap = new Map();
+    collected.forEach((ch) => uniqueMap.set(ch.chapterId, ch));
+
+    const chapters = Array.from(uniqueMap.values())
+      .sort((a, b) => (a.chapterIndex || 0) - (b.chapterIndex || 0))
+      .map((ch) => {
+        const cdn = ch.cdnList?.find((c) => c.isDefault === 1) || ch.cdnList?.[0];
+        const preferred =
+          cdn?.videoPathList?.find((v) => v.isDefault === 1) ||
+          cdn?.videoPathList?.find((v) => v.quality === 1080) ||
+          cdn?.videoPathList?.find((v) => v.quality === 720) ||
+          cdn?.videoPathList?.[0];
+
+        return {
+          ...ch,
+          videoPath: preferred?.videoPath || "N/A",
+          quality: preferred?.quality || null,
+        };
+      });
 
     cache.set(cacheKey, chapters, CONFIG.CACHE_TTL.CHAPTERS);
     return chapters;
